@@ -13,7 +13,11 @@ namespace D3鼠标宏
 {
     public partial class Form1 : Form
     {
-        private Thread pressing;
+        static int halftime = 10;
+        static int time1 = 50;
+        private Thread pressing3;
+        private Thread pressing21;
+        int status21;
         bool ok;
         static AutoResetEvent are = new AutoResetEvent(false);
         [DllImport("user32.dll")]
@@ -76,19 +80,40 @@ namespace D3鼠标宏
         private void Form1_Load(object sender, EventArgs e)
         {
             RegisterHotKey(Handle, 100, 2, Keys.B);
-            pressing = new Thread(new ThreadStart(looppress3));
-            pressing.Start();
-           
+            RegisterHotKey(Handle, 101, 2, Keys.D2);
+            pressing3 = new Thread(new ThreadStart(looppress3));
+            pressing3.Start();
+            
         }
 
+        private void looppress2()
+        {
+            //press 2 once
+
+            keybd_event(Keys.D2, 0, 0, 0);
+            keybd_event(Keys.D2, 0, 2, 0);
+
+            //keeping press 1 in next 11 seconds.
+            int end = 11000 / 2 / time1;
+            for(int i=0;i<end;i++)
+            {
+                keybd_event(Keys.D1, 0, 0, 0);
+                Thread.Sleep(time1);
+                keybd_event(Keys.D1, 0, 2, 0);
+                Thread.Sleep(time1);
+            }
+         
+
+        }
         private void looppress3()
         {
             while(true)
             {
                 if (ok)
                 {
-                    Thread.Sleep(400);
+                    Thread.Sleep(halftime);
                     keybd_event(Keys.D3, 0, 0, 0);
+                    Thread.Sleep(halftime);
                     keybd_event(Keys.D3, 0, 2, 0);
                 }
                 else
@@ -108,11 +133,24 @@ namespace D3鼠标宏
                         case 100:
                             startPress();
                             break;
+                        case 101:
+                            pressing21 = new Thread(new ThreadStart(looppress2));
+                            pressing21.Start();
+                            break;
                     }
                     break;
 
             }
             base.WndProc(ref m);
+        }
+
+        private void startPress21()
+        {
+            status21 = 1;
+            Thread.Sleep(50);
+            status21 = 2;
+            Thread.Sleep(10000);
+            status21 = 0;
         }
 
         private void startPress()
@@ -131,8 +169,10 @@ namespace D3鼠标宏
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
             are.Close();
-            pressing.Abort();
+            pressing3.Abort();
+            pressing21.Abort();
             UnregisterHotKey(Handle, 100);
+            UnregisterHotKey(Handle, 101);
         }
     }
 }

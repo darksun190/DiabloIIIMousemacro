@@ -159,6 +159,8 @@ namespace D3鼠标宏
                             startPress();
                             break;
                         case 101:
+                            keybd_event(Keys.D2, 0, 0, 0);
+                            keybd_event(Keys.D2, 0, 2, 0);
                             sTimer.Start();
                             lTimer.Start();
                             //pressing21 = new Thread(new ThreadStart(looppress2));

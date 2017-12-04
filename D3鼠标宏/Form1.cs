@@ -15,15 +15,11 @@ namespace D3鼠标宏
 {
     public partial class Form1 : Form
     {
-        static int halftime = 10;
-        static int time1 = 50;
-        private Thread pressing3;
-        private Thread pressing21;
-
+    
         Timer sTimer;
         Timer lTimer;
-        int status21;
-        bool ok;
+        Timer timer3;
+
         static AutoResetEvent are = new AutoResetEvent(false);
         [DllImport("user32.dll")]
         static extern bool RegisterHotKey(IntPtr hWnd, int id, int modifiers, Keys vk);
@@ -66,28 +62,40 @@ namespace D3鼠标宏
             }
         }
 
-        // 快捷键消息处理
-        public void ProcessHotKey(Message m)
-        {
-            if (m.Msg == 0x312)
-            {
-                int id = m.WParam.ToInt32();
-                HotKeyCallBackHanlder callback;
-                if (keymap.TryGetValue(id, out callback))
-                    callback();
-            }
-        }
+        //// 快捷键消息处理
+        //public void ProcessHotKey(Message m)
+        //{
+        //    if (m.Msg == 0x312)
+        //    {
+        //        int id = m.WParam.ToInt32();
+        //        HotKeyCallBackHanlder callback;
+        //        if (keymap.TryGetValue(id, out callback))
+        //            callback();
+        //    }
+        //}
+        /// <summary>
+        /// 构造函数
+        /// </summary>
         public Form1()
         {
             InitializeComponent();
-            sTimer = new Timer(50);
+            sTimer = new Timer(100);
             lTimer = new Timer(10000);
+            timer3 = new Timer(100);
             lTimer.AutoReset = false;
             sTimer.AutoReset = true;
+            timer3.AutoReset = true;
             lTimer.Elapsed += LTimer_Elapsed;
             sTimer.Elapsed += STimer_Elapsed;
+            timer3.Elapsed += Timer3_Elapsed;
             //sTimer.Enabled = true;
             //lTimer.Enabled = true;
+        }
+
+        private void Timer3_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
+        {
+            keybd_event(Keys.D3, 0, 0, 0);
+            keybd_event(Keys.D3, 0, 2, 0);
         }
 
         private void STimer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
@@ -104,50 +112,12 @@ namespace D3鼠标宏
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            RegisterHotKey(Handle, 100, 2, Keys.B);
+            RegisterHotKey(Handle, 100, 2, Keys.D3);
             RegisterHotKey(Handle, 101, 2, Keys.D2);
-            pressing3 = new Thread(new ThreadStart(looppress3));
-            pressing3.Start();
-            
         }
 
-        //private void looppress2()
-        //{
-        //    //press 2 once
 
-        //    keybd_event(Keys.D2, 0, 0, 0);
-        //    keybd_event(Keys.D2, 0, 2, 0);
-
-        //    //keeping press 1 in next 11 seconds.
-        //    int end = 11000 / 2 / time1;
-        //    for(int i=0;i<end;i++)
-        //    {
-        //        keybd_event(Keys.D1, 0, 0, 0);
-        //        Thread.Sleep(time1);
-        //        keybd_event(Keys.D1, 0, 2, 0);
-        //        Thread.Sleep(time1);
-        //    }
-         
-
-        //}
-        private void looppress3()
-        {
-            while(true)
-            {
-                if (ok)
-                {
-                    Thread.Sleep(halftime);
-                    keybd_event(Keys.D3, 0, 0, 0);
-                    Thread.Sleep(halftime);
-                    keybd_event(Keys.D3, 0, 2, 0);
-                }
-                else
-                {
-                    are.WaitOne();
-                }
-            }
-        }
-
+      
         protected override void WndProc(ref Message m)
         {
             switch (m.Msg)
@@ -156,15 +126,10 @@ namespace D3鼠标宏
                     switch (m.WParam.ToInt32())
                     {
                         case 100:
-                            startPress();
+                            startPress3();
                             break;
                         case 101:
-                            keybd_event(Keys.D2, 0, 0, 0);
-                            keybd_event(Keys.D2, 0, 2, 0);
-                            sTimer.Start();
-                            lTimer.Start();
-                            //pressing21 = new Thread(new ThreadStart(looppress2));
-                            //pressing21.Start();
+                            startPress1();
                             break;
                     }
                     break;
@@ -173,35 +138,40 @@ namespace D3鼠标宏
             base.WndProc(ref m);
         }
 
-        private void startPress21()
+        private void startPress1()
         {
-            status21 = 1;
-            Thread.Sleep(50);
-            status21 = 2;
-            Thread.Sleep(10000);
-            status21 = 0;
+            keybd_event(Keys.D2, 0, 0, 0);
+            keybd_event(Keys.D2, 0, 2, 0);
+            sTimer.Start();
+            lTimer.Start();
         }
 
-        private void startPress()
+        private void startPress3()
         {
-            if(ok)
+            if(timer3.Enabled)
             {
-                ok = false;
+                timer3.Stop();
             }
-            else 
+            else
             {
-                ok = true;
-                are.Set();
+                timer3.Start();
             }
         }
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
-            are.Close();
-            pressing3.Abort();
-            //pressing21.Abort();
             UnregisterHotKey(Handle, 100);
             UnregisterHotKey(Handle, 101);
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            int v1 = Int32.Parse(textBox1.Text);
+            int v2 = Int32.Parse(textBox2.Text);
+            int v3 = Int32.Parse(textBox3.Text);
+            sTimer.Interval = v1;
+            lTimer.Interval = v2;
+            timer3.Interval = v3;
         }
     }
 }

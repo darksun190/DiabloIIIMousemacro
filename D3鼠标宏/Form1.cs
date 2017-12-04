@@ -9,6 +9,8 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Runtime.InteropServices;
 using System.Threading;
+using Timer = System.Timers.Timer;
+
 namespace D3鼠标宏
 {
     public partial class Form1 : Form
@@ -17,6 +19,9 @@ namespace D3鼠标宏
         static int time1 = 50;
         private Thread pressing3;
         private Thread pressing21;
+
+        Timer sTimer;
+        Timer lTimer;
         int status21;
         bool ok;
         static AutoResetEvent are = new AutoResetEvent(false);
@@ -75,6 +80,26 @@ namespace D3鼠标宏
         public Form1()
         {
             InitializeComponent();
+            sTimer = new Timer(50);
+            lTimer = new Timer(10000);
+            lTimer.AutoReset = false;
+            sTimer.AutoReset = true;
+            lTimer.Elapsed += LTimer_Elapsed;
+            sTimer.Elapsed += STimer_Elapsed;
+            //sTimer.Enabled = true;
+            //lTimer.Enabled = true;
+        }
+
+        private void STimer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine("trigger 1");
+            keybd_event(Keys.D1, 0, 0, 0);
+            keybd_event(Keys.D1, 0, 2, 0);
+        }
+
+        private void LTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
+        {
+            sTimer.Stop();
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -86,25 +111,25 @@ namespace D3鼠标宏
             
         }
 
-        private void looppress2()
-        {
-            //press 2 once
+        //private void looppress2()
+        //{
+        //    //press 2 once
 
-            keybd_event(Keys.D2, 0, 0, 0);
-            keybd_event(Keys.D2, 0, 2, 0);
+        //    keybd_event(Keys.D2, 0, 0, 0);
+        //    keybd_event(Keys.D2, 0, 2, 0);
 
-            //keeping press 1 in next 11 seconds.
-            int end = 11000 / 2 / time1;
-            for(int i=0;i<end;i++)
-            {
-                keybd_event(Keys.D1, 0, 0, 0);
-                Thread.Sleep(time1);
-                keybd_event(Keys.D1, 0, 2, 0);
-                Thread.Sleep(time1);
-            }
+        //    //keeping press 1 in next 11 seconds.
+        //    int end = 11000 / 2 / time1;
+        //    for(int i=0;i<end;i++)
+        //    {
+        //        keybd_event(Keys.D1, 0, 0, 0);
+        //        Thread.Sleep(time1);
+        //        keybd_event(Keys.D1, 0, 2, 0);
+        //        Thread.Sleep(time1);
+        //    }
          
 
-        }
+        //}
         private void looppress3()
         {
             while(true)
@@ -134,8 +159,10 @@ namespace D3鼠标宏
                             startPress();
                             break;
                         case 101:
-                            pressing21 = new Thread(new ThreadStart(looppress2));
-                            pressing21.Start();
+                            sTimer.Start();
+                            lTimer.Start();
+                            //pressing21 = new Thread(new ThreadStart(looppress2));
+                            //pressing21.Start();
                             break;
                     }
                     break;
@@ -170,7 +197,7 @@ namespace D3鼠标宏
         {
             are.Close();
             pressing3.Abort();
-            pressing21.Abort();
+            //pressing21.Abort();
             UnregisterHotKey(Handle, 100);
             UnregisterHotKey(Handle, 101);
         }

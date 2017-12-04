@@ -92,7 +92,7 @@ namespace D3鼠标宏
 
         private void STimer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
         {
-            System.Diagnostics.Debug.WriteLine("trigger 1");
+            //System.Diagnostics.Debug.WriteLine("trigger 1");
             keybd_event(Keys.D1, 0, 0, 0);
             keybd_event(Keys.D1, 0, 2, 0);
         }

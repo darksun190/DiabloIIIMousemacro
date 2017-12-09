@@ -19,6 +19,9 @@ namespace D3鼠标宏
         Timer sTimer;
         Timer lTimer;
         Timer timer3;
+        int interval1 ;
+        int interval2 ;
+        int interval3 ;
 
         static AutoResetEvent are = new AutoResetEvent(false);
         [DllImport("user32.dll")]
@@ -32,7 +35,7 @@ namespace D3鼠标宏
         Dictionary<int, HotKeyCallBackHanlder> keymap = new Dictionary<int, HotKeyCallBackHanlder>();   //每一个key对于一个处理函数
         public delegate void HotKeyCallBackHanlder();
         //组合控制键
-        public enum HotkeyModifiers
+        public enum HotkeyModifiers : int
         {
             Alt = 1,
             Control = 2,
@@ -63,25 +66,32 @@ namespace D3鼠标宏
         }
 
         //// 快捷键消息处理
-        //public void ProcessHotKey(Message m)
-        //{
-        //    if (m.Msg == 0x312)
-        //    {
-        //        int id = m.WParam.ToInt32();
-        //        HotKeyCallBackHanlder callback;
-        //        if (keymap.TryGetValue(id, out callback))
-        //            callback();
-        //    }
-        //}
+        public void ProcessHotKey(Message m)
+        {
+            if (m.Msg == 0x312)
+            {
+                int id = m.WParam.ToInt32();
+                HotKeyCallBackHanlder callback;
+                if (keymap.TryGetValue(id, out callback))
+                    callback();
+            }
+        }
         /// <summary>
         /// 构造函数
         /// </summary>
         public Form1()
         {
             InitializeComponent();
-            sTimer = new Timer(100);
-            lTimer = new Timer(10000);
-            timer3 = new Timer(100);
+            interval1 = Properties.Settings.Default.Interval1;
+            interval2 = Properties.Settings.Default.Interval2;
+            interval3 = Properties.Settings.Default.Interval3;
+
+            textBox1.Text = interval1.ToString();
+            textBox2.Text = interval2.ToString();
+            textBox3.Text = interval3.ToString();
+            sTimer = new Timer(interval1);
+            lTimer = new Timer(interval2);
+            timer3 = new Timer(interval3);
             lTimer.AutoReset = false;
             sTimer.AutoReset = true;
             timer3.AutoReset = true;
@@ -112,8 +122,8 @@ namespace D3鼠标宏
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            RegisterHotKey(Handle, 100, 2, Keys.D3);
-            RegisterHotKey(Handle, 101, 2, Keys.D2);
+            RegisterHotKey(Handle, 100, 2, Keys.B);
+            RegisterHotKey(Handle, 101, 1, Keys.D2);
         }
 
 
@@ -162,16 +172,20 @@ namespace D3鼠标宏
         {
             UnregisterHotKey(Handle, 100);
             UnregisterHotKey(Handle, 101);
+            Properties.Settings.Default.Interval1 = interval1;
+            Properties.Settings.Default.Interval2 = interval2;
+            Properties.Settings.Default.Interval3 = interval3;
+            Properties.Settings.Default.Save();
         }
 
         private void button1_Click(object sender, EventArgs e)
         {
-            int v1 = Int32.Parse(textBox1.Text);
-            int v2 = Int32.Parse(textBox2.Text);
-            int v3 = Int32.Parse(textBox3.Text);
-            sTimer.Interval = v1;
-            lTimer.Interval = v2;
-            timer3.Interval = v3;
+            interval1 = Int32.Parse(textBox1.Text);
+            interval2 = Int32.Parse(textBox2.Text);
+            interval3 = Int32.Parse(textBox3.Text);
+            sTimer.Interval = interval1;
+            lTimer.Interval = interval2;
+            timer3.Interval = interval3;
         }
     }
 }
